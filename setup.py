@@ -2,7 +2,7 @@ from setuptools import setup, find_packages, find_namespace_packages
 
 setup(
     name='nmrgrad',
-    version='0.0.1',
+    version='0.0.2',
     description='Tools for gradient coil calculation',
     author='Markus Meissner',
     # packages=['biot-savart'],

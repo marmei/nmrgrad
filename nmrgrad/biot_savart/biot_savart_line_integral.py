@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Compute the Biot Savart line integral.
+Compute the Biot-Savart line integral.
 
 """
 from multiprocessing import Pool
 from functools import partial
 import numpy as np
 
-def calc_biot_savart(field_pt, delta_l, wire_elem_c, current,
+def calc_biot_savart(field_pt, delta_l, wire_elem_c, current=1.0,
                      mu_not=1.25663706212e-06):
     """
-    Calculates the Biot Savart line integral at a given point, ``field_pt``.
+    Calculates the Biot-Savart line integral at a given point, ``field_pt``.
 
     Parameters
     ----------
@@ -25,14 +25,14 @@ def calc_biot_savart(field_pt, delta_l, wire_elem_c, current,
     Returns
     -------
     ndarray
-        The B-field at the given point, field_pt.
+        The magnetic flux density at the given point, field_pt.
 
     """
-    disp_vect = np.asarray(field_pt - wire_elem_c, dtype=np.float64)
-    cross_p = np.asarray(np.cross(delta_l, disp_vect), dtype=np.float64)
+    disp_vect = field_pt - wire_elem_c
+    cross_p = np.cross(delta_l, disp_vect)
     f_vector = (np.divide(cross_p.T, (disp_vect**2).sum(axis=1)**1.5).T).sum(axis=0)
 
-    return f_vector * mu_not / (4.0 * np.pi) * current
+    return mu_not * current / (4.0 * np.pi) * f_vector
 
 def biot_line_integral(wire_elem_pt, r_field, current=1.0):
     """
@@ -56,8 +56,8 @@ def biot_line_integral(wire_elem_pt, r_field, current=1.0):
 
     Returns
     -------
-    bfield_out : TYPE
-        Magnetric flux density Bfield, with the same shape as r_field.
+    bfield_out : ndarray
+        Magnetric flux density, with the same shape as r_field.
 
     """
     pool = Pool()
@@ -78,8 +78,8 @@ def biot_line_integral(wire_elem_pt, r_field, current=1.0):
     return bfield_out
 
 def mgrid_2d_roi(axis_x, axis_y, axis_const,
-              roi=np.array([[-0.1, -0.1, -0.1], [0.1, 0.1, 0.1]]) * 1e-3,
-              pos_axis_const=0.0, ndots=50):
+                 roi=np.array([[-0.1, -0.1, -0.1], [0.1, 0.1, 0.1]]) * 1e-3,
+                 pos_axis_const=0.0, ndots=50):
     """
     Create the roi mesh grid on a 2D plane.
 
@@ -124,23 +124,28 @@ def mgrid_2d_roi(axis_x, axis_y, axis_const,
 if __name__ == "__main__":
     import time
 
-    Z_NOT = 500.0 * 10**-6
+    Z_NOT = 1.312e-3
 
-    x = np.linspace(-0.02, 0.02, 200*200)
+    x = np.linspace(-.1, .1, 200)
     y = np.zeros_like(x) + Z_NOT
-    z = np.zeros_like(x) + Z_NOT
+    z = np.zeros_like(x)
 
-    wire_elem_points = np.array([x, y, z], dtype=np.float64).swapaxes(0, 1)
-
-    print("wire_elem_points", wire_elem_points)
+    wire_elem_points = np.array([x, y, z]).swapaxes(0, 1)
 
     t0 = time.time()
 
-    # in NMR we are just looking at the z component.
-    _, _, RP = mgrid_2d_roi("x", "y", "z")
-    a = biot_line_integral(wire_elem_points, RP)
+    _, _, RP = mgrid_2d_roi("x", "y", "z", ndots=9)
+    bfield_rp = biot_line_integral(wire_elem_points, RP)
+
+    bfield_centre = biot_line_integral(wire_elem_points, np.array([[0.0, 0.0, 0.0]]))
 
     t1 = time.time()
+    print(bfield_rp)
+
+    # infinite wire, analytical solution:
+    b_mag_analytical = np.abs(np.pi * 4e-7 / (2 * np.pi * Z_NOT))
+
+    print("error of bfield compared to analytical solution: {:2.3f} %".format( \
+          np.abs(1 - np.linalg.norm(bfield_centre) / b_mag_analytical) * 100))
 
     print("took %f seconds" %(t1 - t0))
-    print(a)
