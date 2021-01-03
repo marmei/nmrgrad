@@ -1,0 +1,82 @@
+print("Using local latexmkrc\n");
+
+$pdflatex = 'pdflatex --shell-escape %O %S';
+@generated_exts = qw(aux idx ind lof lot out toc acn acr alg glg glo gls ist py py.err pytxmcr);
+
+
+add_cus_dep('glo', 'gls', 0, 'makeglo2gls');
+## add_cus_dep('acn', 'acr', 0, 'makeglo2gls');
+add_cus_dep( 'nlo', 'nls', 0, 'makenlo2nls' );
+add_cus_dep( 'acn', 'acr', 0, 'makeacn2acr' );
+
+sub makeacn2acr {
+    system( "makeindex -s \"$_[0].ist\" -t \"$_[0].alg\" -o \"$_[0].acr\" \"$_[0].acn\"" );
+}
+
+sub makeglo2gls {
+    print("makeindex -s '$_[0]'.ist -t '$_[0]'.glg -o '$_[0]'.gls '$_[0]'.glo\n\n\n");
+    system("makeindex -s '$_[0]'.ist -t '$_[0]'.glg -o '$_[0]'.gls '$_[0]'.glo");
+}
+
+
+#sub makeglo2gls {
+#    system( "makeglossaries $_[0]" );
+#}
+
+sub makenlo2nls {
+    print("make_momen\n");
+    system( "makeindex -s nomencl.ist -o \"$_[0].nls\" \"$_[0].nlo\"" );
+}
+
+# This is to allow the use of sagetex package 
+# (http://www.ctan.org/tex-archive/macros/latex/contrib/sagetex)
+# with latexmk.  Sagetex outputs a file with the extension .sage.
+# This file is to be processed by sage software (http://sagemath.org) 
+# to make a file with extension .sout.  This file is then read in by
+# sagetex during a later run of (pdf)latex.
+#
+# This can be done by normal custom dependency.  However the .sage
+# contains unimportant information about line numbers for error
+# reporting. It is useful not to rerun sage if this is the only
+# information that has changed in the .sage file.  So the
+# hash_calc_ignore_pattern variable is used to configure latexmk to
+# ignore this lines when computing whether the .sage file has
+# changed. 
+
+
+# add_cus_dep( 'sage', 'sout', 0, 'makesout' );
+# $hash_calc_ignore_pattern{'sage'} = '^( _st_.goboom|print .SageT)';
+# sub makesout {
+#    system( "sage \"$_[0].sage\"" );
+# }
+
+add_cus_dep('pytxcode', 'tex', 0, 'pythontex');
+sub pythontex { return system("pythontex \"$_[0]\""); }
+
+# $pdflatex = 'internal mylatex %R %Z pdflatex %O %S';
+# $latex = 'internal mylatex %R %Z latex %O %S';
+# sub mylatex {
+#    my $root = shift;
+#    my $dir_string = shift;
+#    my $code = "$root.pytxcode";
+#    my $result = "pythontex-files-$root";
+#    if ($dir_string) {
+#       warn "mylatex: Making symlinks to fool cus_dep creation\n";
+#       unlink $code;
+#       if (-l $result) {
+#           unlink $result;
+#       }
+#       elsif (-d $result) {
+#          unlink glob "$result/*";
+#          rmdir $result;
+#       }
+#       symlink $dir_string.$code, $code;
+#       if ( ! -e $dir_string.$result ) { mkdir $dir_string.$result; }
+#       symlink $dir_string.$result, $result;
+#    }
+#    else {
+#       foreach ($code, $result) { if (-l) { unlink; } }
+#    }
+#    return system @_;
+# }
+

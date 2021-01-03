@@ -1,0 +1,137 @@
+\documentclass[12pt,a4paper,english,intoc,bibliography=totoc,BCOR=10mm,titlepage,fleqn]{scrartcl}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{textcomp}
+\usepackage{rotating,multirow}
+\usepackage[table,dvipsnames]{xcolor}
+\usepackage[
+  unicode=true, 
+  bookmarks=true,
+  bookmarksnumbered=true,
+  bookmarksopen=true,
+  bookmarksopenlevel=1,
+  breaklinks=false,
+  pdfborder={0 0 0},
+  backref=false,
+  colorlinks=false]{hyperref}
+\usepackage[acronym,toc,index]{glossaries}
+\usepackage{babel}
+\usepackage{sfmath,bigints,relsize,scalerel}
+\usepackage{siunitx}
+\usepackage[autoprint=false]{pythontex}
+\usepackage{numprint}
+\usepackage{capt-of}
+ 
+\usepackage{pdflscape}
+\usepackage{geometry}
+\geometry{a4paper,total={210mm,297mm},left=35mm,right=25mm,top=35mm,bottom=35mm}
+
+\usepackage[square,numbers,super]{natbib}
+\usepackage[utf8]{inputenc}
+\usepackage{adjustbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{calc}
+\usepackage{chemformula}
+\usepackage{colortbl}
+\usepackage{fancyref}
+\usepackage{graphicx}
+\usepackage{hhline,booktabs}
+\usepackage{import}
+\usepackage{nomencl}
+\usepackage{tabu,tabularx}
+\usepackage{tikz} 
+\usepackage{url}
+\usepackage{verbatim}
+
+\makeglossaries 
+\loadglsentries{acronym.tex}
+\makeindex
+\usepackage{multicol}
+
+\sisetup{%
+  mode=math,
+  detect-family,
+  detect-weight,
+  text-micro=\textmu,
+  exponent-product=\cdot,
+  number-unit-separator=\text{\,},
+  output-decimal-marker={\text{,}},
+  math-rm=\mathsf,
+  text-rm=\sffamily,
+}
+
+\DeclareSIUnit\rperminute{rpm}
+\DeclareSIUnit\sccm{sccm}
+\newcommand\unslant[2][-.25]{\slantbox[#1]{$#2$}} 
+
+
+\usepackage[super]{nth}
+\usepackage{caption}
+\setlength{\LTleft}{-20cm plus -1fill}
+\setlength{\LTright}{\LTleft}
+
+\definecolor{tableShade}{gray}{0.95}
+\newcommand{\pycgrady}[1]{\pyc[grad_cal_y]{print(#1)}\printpythontex}
+\newcommand{\pycgrad}[1]{\pyc[grad_cal]{print(#1)}\printpythontex}
+
+%%% Processing Description: Counter
+\newcounter{rclassno}
+\newcounter{rstepno}[rclassno]
+\newcounter{rsubstepno}[rstepno]
+\setlength{\tabcolsep}{2pt}
+
+\newcommand{\rclass}[1]{%
+  {\refstepcounter{rclassno}\label{#1}}
+}
+
+\newcommand{\rstep}[1]{%
+  {\refstepcounter{rstepno}\label{#1}}
+}
+
+\newcommand{\rsubstep}[1]{%
+  {\refstepcounter{rsubstepno}\label{#1}}
+}
+
+% for the table, set no colour for first row
+\usepackage{etoolbox}
+\appto\endtabular{\global\rownum=0}
+
+\title{ma-N 1420 Lithography \& Lift-Off Process}
+\author{MVM}
+
+\date{\today}
+\renewcommand{\familydefault}{\sfdefault}
+
+\begin{document}
+\maketitle 
+
+\def\noWaitSDR{Include nitrogen flush. No wait time after spin rinse dry.}
+\def\rinseDIW{Gently rinse and shower wafers with \gls{DIW}.}
+\def\rinseIPA{Rinse in \gls{IPA} after development.}
+
+Start on fresh glass substrates. Substrate types are:
+
+\begin{itemize}
+\item DS263TECO (SCHOTT GLASS MALAYSIA COMPONENTS). Evaluated thicknesses: \SI{100}{\micro\metre}, \SI{150}{\micro\metre}, \SI{210}{\micro\metre}  
+\item MEMPAX\textregistered (SCHOTT GLASS MALAYSIA COMPONENTS). Evaluated thicknesses: \SI{200}{\micro\metre}, \SI{300}{\micro\metre}, \SI{500}{\micro\metre}  
+\end{itemize}
+
+The Process is based on \cite{Vulto2005a, Muller2010}.
+\\
+\begin{pycode}
+from nmrgrad import protolatex
+a = protolatex.xmlPrettyTable2col("ma-N14xx_stdProcess.xml", classIx=1, subclassIx=None)
+a.classtype = "I "
+a.steptype  = "I "
+a.printtex()
+print (r"\vfill")
+\end{pycode}
+\begin{footnotesize}\printpythontex\end{footnotesize}
+
+% BIBLIOGRAPHY
+\bibliographystyle{ieeetr}
+\bibliography{bib}
+
+\end{document}

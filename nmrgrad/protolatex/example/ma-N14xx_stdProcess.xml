@@ -1,0 +1,94 @@
+<process name="testprocess">
+  <class name="Seed Layer" ref="23653314">
+    <step name="Cleaning Std. I" ot="7" mt="7" ref="68376182">
+      <parameter text="type" value="Caro acid (H2SO4 + H2O2) + \gls{QDR}"/>
+      <parameter text="temperature" unit="\celsius" value="70"/>
+      <parameter text="time" unit="\minute" value="7"/>
+      <comment>No wait time after \gls{QDR}.</comment>
+    </step>
+    
+    <step name="Spin Rinse Dry" ot="0" mt="5" ref="23553736">
+      <device>Semitool</device>
+      <parameter text="angular velocity" value="2000" unit="\rperminute"/>
+      <comment>\noWaitSDR</comment>
+    </step>
+    
+    <step name="Dehydration Bake" ot="1" mt="30" ref="16388381">
+      <device>oven</device>
+      <parameter text="temperature" unit="\celsius" value="200"/>
+      <parameter text="time" unit="\minute" value="30"/>
+      <comment>Let borosilicate wafers cool down to room temperature after dehydration.</comment>
+    </step>
+    
+    <step name="Oxygen Plasma" ot="1" mt="7" ref="oxygen_clean_01">
+      <device>TePla, Technics Plasma GmbH</device>
+      <parameter text="oxygen flow" value="500" unit="{sccm}"/>
+      <parameter text="power" unit="\watt" value="200"/>
+      <parameter text="pressure" unit="\milli\bar" value="1"/>
+      <parameter text="time" unit="\minute" value="3"/>
+      <comment>To oxidize the surface of the borosilicate substrate.</comment>
+    </step>
+    
+    <step name="\gls{HMDS}" ot="2" mt="2" ref="45751983">
+      <device>hotplate</device>
+      <parameter text="temperature" value="100" unit="\celsius"/>
+      <comment>get the parameters of the HMDS hotplate!!!</comment>
+    </step>
+
+    <step name="Spin Coating" ot="1" mt="3" ref="53646079">
+      <device>std. spin coater</device>
+      <parameter text="resist" value="ma-N 1420"/>
+      <parameter text="thickness" value="2" unit="\micro\metre"/>
+      <parameter text="dispense" value="2.5" unit="\milli\liter" description="statically"/>
+      <parameter text="ramp 01 plateau" value="3000" unit="\rperminute" value1="30" unit1="\second"/>
+    </step>
+
+    <step name="Pre-Bake" ot="2" mt="2" ref="31288196">
+      <device>hotplate with pins</device>
+      <parameter text="temperature" unit="\celsius" value="100"/>
+      <parameter text="time" unit="\second" value="120"/>
+    </step>
+    
+    <step name="Lithography" ot="8" mt="2" ref="10263382">
+      <device>MA6, SUSS Micro Tec</device>
+      <parameter text="mask type" value="film mask"/>
+      <parameter text="mask name" value="M\_G\_0X"/>
+      <parameter text="alignment" value="flat"/>
+      <parameter text="contact mode" value="soft"/>
+      <parameter text="exposure dose" description="at \SI{365}{\nano\metre}" unit="\milli\joule\per\centi\metre\squared" value="685"/>
+      <comment>Extend lithography dose by factor $1.5$ to compensate absorption by the polymer mask (already included in the exposure dose value) (\SI{76}{\second} at \SI{9}{\milli\watt\per\centi\metre\squared}).</comment>
+    </step>
+    
+    <step name="Development" ot="3" mt="4" ref="93700560">
+      <device>megasonic bath</device>
+      <parameter text="developer" value="ma-D 533s"/>
+      <parameter text="frequency" unit="\mega\hertz" value="1"/>
+      <parameter text="power" unit="\watt" value="800"/>
+      <parameter text="time" unit="\second" value="100"/>
+      <comment>\rinseDIW</comment>
+    </step>
+
+    <step name="Spin Rinse Dry" ot="0" mt="5" ref="11763341">
+      <device>Semitool</device>
+      <parameter text="angular velocity" value="2000" unit="\rperminute"/>
+      <comment>\noWaitSDR</comment>
+    </step>
+
+    <step name="\gls{PVD}" ot="30" mt="180" ref="13574122">
+      <device>magnetron sputtering machine</device>
+      <parameter text="layer 01 height" description="WTi: \SI{1}{\minute} \SI{30}{\second} at \SI{100}{\watt}" unit="\nano\meter" value="9"/>
+      <parameter text="pressure" value="{$1.9 \cdot 10^{-7}$}" unit="\milli\bar"/>
+      <parameter text="layer 02 height" description="Pt: \SI{1}{\minute} \SI{42}{\second} at \SI{300}{\watt}" unit="\nano\meter" value="80"/>
+      <comment>(W-Ti growth rate at \SI{100}{\watt}: \SI{6}{\nano\metre\per\minute}) \newline
+      (Pt growth rate at \SI{300}{\watt}: \SI{47}{\nano\metre\per\minute})</comment>
+    </step>
+
+    <step name="Lift-Off" ot="10" mt="15" ref="13150310">
+      <device>ultrasonic bath</device>
+      <parameter text="stripper" value="{mr-Rem 700}"/>
+      <parameter text="time" unit="\minute" value="{2 $\times$} 5"/>
+      <parameter text="power" unit="\watt" value="800"/>
+      <comment>Rinse in \gls{DIW}, \gls{IPA} and \gls{DIW}.</comment>
+    </step>
+  </class>
+</process>
