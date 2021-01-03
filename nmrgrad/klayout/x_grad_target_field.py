@@ -11,8 +11,8 @@ try:
 except ImportError:
     # without klayout gui
     import klayout.db as pya
-
 import numpy as np
+
 
 class CCoilGapsX_XY(KlayoutPyGradCoil):
 
@@ -41,7 +41,8 @@ class CCoilGapsX_XY(KlayoutPyGradCoil):
         if "@ViaShift" in GradCoil:
             self.ViaShift = eval(GradCoil["@ViaShift"])
         if "@InterConnectPathWidth" in GradCoil:
-            self.InterConnectPathWidth = eval(GradCoil["@InterConnectPathWidth"])
+            self.InterConnectPathWidth = eval(
+                GradCoil["@InterConnectPathWidth"])
         if "@shiftInterconMode" in GradCoil:
             self.shiftInterconMode = eval(GradCoil["@shiftInterconMode"])
 
@@ -77,7 +78,7 @@ class CCoilGapsX_XY(KlayoutPyGradCoil):
         if "@interconDistLeft" in GradCoil:
             self.interconDistLeft = eval(GradCoil["@interconDistLeft"])
         if "@shiftGapsRedBlue" in GradCoil:
-            if eval(GradCoil["@shiftGapsRedBlue"]) == True:
+            if eval(GradCoil["@shiftGapsRedBlue"]):
                 self.shiftGapsRedBlue = True
             else:
                 self.shiftGapsRedBlue = False
@@ -86,10 +87,10 @@ class CCoilGapsX_XY(KlayoutPyGradCoil):
 
     def read_grad_streamlines(self, GradCoil):
         # read the curves from the SVG Plots
-        self.red_cc01, self.blue_cc01 = import_svg_polyline(self.dir_grad_coils
-                                                            + GradCoil["@fileCoil"])
-        self.red_gaps_cc01, self.blue_gaps_cc01 = import_svg_polyline(self.dir_grad_coils
-                                                                      + GradCoil["@fileGaps"])
+        self.red_cc01, self.blue_cc01 = import_svg_polyline(
+            self.dir_grad_coils + GradCoil["@fileCoil"])
+        self.red_gaps_cc01, self.blue_gaps_cc01 = import_svg_polyline(
+            self.dir_grad_coils + GradCoil["@fileGaps"])
 
     @staticmethod
     def KlayoutToBfield(cond, zNot):
@@ -100,26 +101,34 @@ class CCoilGapsX_XY(KlayoutPyGradCoil):
         """
         return np.asarray([cond[:, 0] * 1e-6,
                            cond[:, 1] * 1e-6,
-                           np.zeros_like(cond[:, 0]) + zNot * 1e-3]).swapaxes(0, 1)
+                           np.zeros_like(cond[:, 0])
+                           + zNot * 1e-3]).swapaxes(0, 1)
 
     def simuGradModel(self):
         """
         Plots the Field for the gradient coils from the streamlines.
 
-        This method depends on KlayoutToBfield which is created in the subclass to map the 3D array.
+        This method depends on KlayoutToBfield which is created in the subclass
+        to map the 3D array.
         """
         self.conductors = []
         for cond in self.blue_cc01:
-            self.conductors.append([self.KlayoutToBfield(cond, -1.0 * self.ccSep01),
-                                    {"color":"b", "zorder":210, "current":-1.0}])
+            self.conductors.append([self.KlayoutToBfield(cond, -1.0
+                                                         * self.ccSep01),
+                                    {"color": "b", "zorder": 210,
+                                     "current": -1.0}])
             self.conductors.append([self.KlayoutToBfield(cond, self.ccSep01),
-                                    {"color":"r", "zorder":190, "current":-1.0}])
+                                    {"color": "r", "zorder": 190,
+                                     "current": -1.0}])
         for cond in self.red_cc01:
-            self.conductors.append([self.KlayoutToBfield(cond, -1.0 * self.ccSep01),
-                                    {"color":"b", "zorder":210, "current":-1.0}])
+            self.conductors.append([self.KlayoutToBfield(
+                cond,
+                -1.0 * self.ccSep01),
+                {"color": "b", "zorder": 210, "current": -1.0}])
             self.conductors.append([self.KlayoutToBfield(cond, self.ccSep01),
-                                    {"color":"r", "zorder":190, "current":-1.0}])
-        self.condPlot3D = self.conductors # for simulation
+                                    {"color": "r", "zorder": 190,
+                                     "current": -1.0}])
+        self.condPlot3D = self.conductors  # for simulation
 
     def makeViaStartEnd(self):
         """
@@ -130,22 +139,25 @@ class CCoilGapsX_XY(KlayoutPyGradCoil):
         self.makeVia(self.SingleCoilArray[-1] + self.ViaShift * 1e3,
                      vertical=True, trans=pya.Trans(pya.Trans.R0, 0.0, 0.0))
 
-    def makeInterconnect(self, InterConnectBaseArr, direction="Right", LayerInfo=None):
+    def makeInterconnect(self, InterConnectBaseArr,
+                         direction="Right", LayerInfo=None):
         InterConnect = np.zeros_like(InterConnectBaseArr)
 
         # Overlay the Interconnection to the base array
         if direction == "Right":
             InterConnect[0] = np.array([self.SingleCoilArray[0] * 1e-3
                                         + self.ViaShift])
-            InterConnect[1] = np.array([self.SingleCoilArray[0][0] * 1e-3, 0.0])
+            InterConnect[1] = np.array([self.SingleCoilArray[0][0]
+                                        * 1e-3, 0.0])
             InterConnect = InterConnect + InterConnectBaseArr
         elif direction == "Left":
             InterConnect[0] = np.array([self.SingleCoilArray[-1] * 1e-3
                                         + self.ViaShift])
-            InterConnect[1] = np.array([self.SingleCoilArray[-1][0] * 1e-3, 0.0])
+            InterConnect[1] = np.array([self.SingleCoilArray[-1][0] * 1e-3,
+                                        0.0])
             InterConnect = InterConnect + InterConnectBaseArr * [-1.0, 1.0]
 
-        ## make the right interconnection Path
+        # make the right interconnection Path
         Intecon = KlayoutPyFeature(self.TargetCellName)
         Intecon.TargetCellName = "intercon_dummy" + str(np.random.rand())
         Intecon.removeCell()
@@ -155,22 +167,23 @@ class CCoilGapsX_XY(KlayoutPyGradCoil):
 
         placeRoundPath(Intecon.TargetCell,
                        Intecon._ly,
-                       radius = 400,
-                       width = self.InterConnectPathWidth,
-                       pts = InterConnect,
-                       LayerInfo = LayerInfo,
-                       RadPath = self.widthVia * 1e-3)
+                       radius=400,
+                       width=self.InterConnectPathWidth,
+                       pts=InterConnect,
+                       LayerInfo=LayerInfo,
+                       RadPath=self.widthVia * 1e-3)
 
         InterConnect = discretise_wire(InterConnect)
 
         if self.zNOTCal_top_real != None:
-            return np.array([InterConnect.T[0], # x
-                             InterConnect.T[1], # y
+            return np.array([InterConnect.T[0],  # x
+                             InterConnect.T[1],  # y
                              np.zeros_like(InterConnect.T[0]) + self.zNOT_top_real]) * 1e-3
         else:
-            return np.array([InterConnect.T[0], # x
-                             InterConnect.T[1], # y
-                             np.zeros_like(InterConnect.T[0]) + self.zNOT_top]) * 1e-3
+            return np.array([InterConnect.T[0],  # x
+                             InterConnect.T[1],  # y
+                             np.zeros_like(InterConnect.T[0])
+                             + self.zNOT_top]) * 1e-3
 
     def makeGradLabel(self):
         """ make the gradient coil label """
@@ -193,26 +206,30 @@ class CCoilGapsX_XY(KlayoutPyGradCoil):
         yPos_bot = self.SingleCoilArray[:, 1] * 1e-6
         yPos_top = np.flipud(self.SingleCoilArray)[:, 1] * -1e-6
 
-
-        if self.zNOTCal_bot_real != None:
-            zPos_top = np.zeros_like(xPos_top) + (self.zNOT_bot_real * 1e-3) # zNot is in um
+        if self.zNOTCal_bot_real is not None:
+            zPos_top = np.zeros_like(
+                xPos_top) + (self.zNOT_bot_real * 1e-3)  # zNot is in um
             zPos_bot = np.zeros_like(xPos_bot) - (self.zNOT_bot_real * 1e-3)
         else:
-            zPos_top = np.zeros_like(xPos_top) + (self.zNOT_bot * 1e-3) # zNot is in um
+            zPos_top = np.zeros_like(xPos_top) + \
+                (self.zNOT_bot * 1e-3)  # zNot is in um
             zPos_bot = np.zeros_like(xPos_bot) - (self.zNOT_bot * 1e-3)
 
-        InterconLeftTop = discretise_wire(np.array([InterConnectLeftComp[0][::-1],
-                                                    InterConnectLeftComp[1][::-1] * -1.0,
-                                                    InterConnectLeftComp[2][::-1]]))
+        InterconLeftTop = discretise_wire(
+                np.array([InterConnectLeftComp[0][::-1],
+                          InterConnectLeftComp[1][::-1] * -1.0,
+                          InterConnectLeftComp[2][::-1]]))
 
-        InterconRightTop = discretise_wire(np.array([InterConnectRightComp[0],
-                                                     InterConnectRightComp[1] * -1.0,
-                                                     InterConnectRightComp[2]]))
+        InterconRightTop = discretise_wire(
+                np.array([InterConnectRightComp[0],
+                          InterConnectRightComp[1] * -1.0,
+                          InterConnectRightComp[2]]))
 
         TopChipConductorSet = np.asarray([xPos_top, yPos_top, zPos_top])
         self.conductors.append([np.hstack([InterconLeftTop,
-                                        TopChipConductorSet,
-                                        InterconRightTop]).swapaxes(0,1), {"current": -1.0}])
+                                           TopChipConductorSet,
+                                           InterconRightTop]).swapaxes(0, 1),
+                                {"current": -1.0}])
 
         BotChipConductorSet = np.asarray([xPos_bot, yPos_bot, zPos_bot])
         InterconLeftBot = np.array([InterConnectLeftComp[0],
@@ -225,37 +242,45 @@ class CCoilGapsX_XY(KlayoutPyGradCoil):
 
         self.conductors.append([np.hstack([InterconRightBot,
                                            BotChipConductorSet,
-                                           InterconLeftBot]).swapaxes(0,1), {"current": -1.0}])
+                                           InterconLeftBot]).swapaxes(0, 1),
+                                {"current": -1.0}])
 
         def helperSS(arrA, appendStart=None, appendEnd=None):
-            arrayIn = [arrA[0],arrA[1],arrA[2]]
+            arrayIn = [arrA[0], arrA[1], arrA[2]]
             if appendStart is None and appendEnd is None:
                 return np.array(arrayIn).swapaxes(0, 1)
             elif appendEnd is None:
                 return np.append(arrayIn,
-                                 np.array([appendStart[::, 0]]).T, axis=1).swapaxes(0, 1)
+                                 np.array([appendStart[::, 0]]).T,
+                                 axis=1).swapaxes(0, 1)
             elif appendStart is None:
                 return np.append(arrayIn,
-                                 np.array([appendEnd[::, -1]]).T, axis=1).swapaxes(0, 1)
+                                 np.array([appendEnd[::, -1]]).T,
+                                 axis=1).swapaxes(0, 1)
 
         self.condPlot3D.append([helperSS(BotChipConductorSet),
-                                {"color":"orangered", "zorder":291}])
-        self.condPlot3D.append([helperSS(InterconRightBot, BotChipConductorSet),
-                                {"color":"forestgreen", "zorder":291}])
+                                {"color": "orangered", "zorder": 291}])
+        self.condPlot3D.append([helperSS(InterconRightBot,
+                                         BotChipConductorSet),
+                                {"color": "forestgreen", "zorder": 291}])
 
         self.condPlot3D.append([helperSS(np.fliplr(InterconLeftBot),
-                                         appendStart=np.fliplr(BotChipConductorSet)),
-                                {"color":"forestgreen", "zorder":291}])
+                                         appendStart=np.fliplr(
+                                                 BotChipConductorSet)),
+                                {"color": "forestgreen", "zorder": 291}])
 
         self.condPlot3D.append([helperSS(InterconLeftTop,
                                          appendStart=TopChipConductorSet),
-                                {"color":"g", "zorder":390}])
+                                {"color": "g", "zorder": 390}])
 
         self.condPlot3D.append([helperSS(np.fliplr(InterconRightTop),
-                                         appendStart=np.fliplr(TopChipConductorSet)),
-                                {"color":"g", "zorder":390}])
+                                         appendStart=np.fliplr(
+                                                 TopChipConductorSet)),
+                                {"color": "g", "zorder": 390}])
 
-        self.condPlot3D.append([helperSS(TopChipConductorSet), {"color":"b", "zorder":390}])
+        self.condPlot3D.append([helperSS(TopChipConductorSet), {
+                               "color": "b", "zorder": 390}])
+
 
 def makeCoilGapsX_XY(GradCoil, TargetCellName,
                      dir_grad_output=None, dir_grad_coils=None,
@@ -272,11 +297,11 @@ def makeCoilGapsX_XY(GradCoil, TargetCellName,
         Grad.dir_grad_output = dir_grad_output
 
     if remove is True:
-        Grad.removeCell() # clear the grad cell before
+        Grad.removeCell()  # clear the grad cell before
 
     Grad.read_grad_streamlines(GradCoil)
 
-    if Grad.shiftGapsRedBlue == False:
+    if Grad.shiftGapsRedBlue is False:
         Grad.red_gaps_cc01 = []
         for gaps in Grad.blue_gaps_cc01:
             Grad.red_gaps_cc01.append(gaps * np.array([-1.0, 1.0]))
@@ -291,54 +316,67 @@ def makeCoilGapsX_XY(GradCoil, TargetCellName,
     ptsIntercon = Grad.InterConPts(Grad.cIntercon)
 
     # only select the blue coil/gaps
-    listOfCoilsRight = Grad.GapsIntoCoilList(Grad.blue_cc01, ptsIntercon,
-                                             interconDistMax=Grad.interconDistRight)
-    listOfGapsRight  = Grad.GapsIntoCoilList(Grad.blue_gaps_cc01, ptsIntercon,
-                                             interconDistMax=Grad.interconDistRight)
+    listOfCoilsRight = Grad.GapsIntoCoilList(
+            Grad.blue_cc01, ptsIntercon,
+            interconDistMax=Grad.interconDistRight)
+    listOfGapsRight = Grad.GapsIntoCoilList(
+            Grad.blue_gaps_cc01, ptsIntercon,
+            interconDistMax=Grad.interconDistRight)
 
-    listOfCoilsLeft = Grad.GapsIntoCoilList(Grad.red_cc01, ptsIntercon,
-                                            interconDistMax=Grad.interconDistLeft)[::-1]
-    listOfGapsLeft = Grad.GapsIntoCoilList(Grad.red_gaps_cc01, ptsIntercon,
-                                           interconDistMax=Grad.interconDistLeft,
-                                           invert=True, skipLast=True)
+    listOfCoilsLeft = Grad.GapsIntoCoilList(
+            Grad.red_cc01, ptsIntercon,
+            interconDistMax=Grad.interconDistLeft)[::-1]
+    listOfGapsLeft = Grad.GapsIntoCoilList(
+            Grad.red_gaps_cc01, ptsIntercon,
+            interconDistMax=Grad.interconDistLeft,
+            invert=True, skipLast=True)
 
     # make the gradient curve
-    SingleCoilArrayRight = Grad.makeSingleCurve(listOfCoilsRight, ptsIntercon,
-                                                connectEndPts=False)[Grad.skipPtsStart::]
+    SingleCoilArrayRight = Grad.makeSingleCurve(
+            listOfCoilsRight, ptsIntercon,
+            connectEndPts=False)[Grad.skipPtsStart::]
     ptsStartLeftCoil = np.append(SingleCoilArrayRight[-3:-1:],
                                  Grad.extraPtCoilCoilIcon, axis=0)
-    SingleCoilArrayLeft = Grad.makeSingleCurve(listOfCoilsLeft,
-                                               ptsIntercon,
-                                               startPts=ptsStartLeftCoil)[:-1 * Grad.skipPtsStart]
+    SingleCoilArrayLeft = Grad.makeSingleCurve(
+            listOfCoilsLeft,
+            ptsIntercon,
+            startPts=ptsStartLeftCoil)[:-1 * Grad.skipPtsStart]
 
-    SingleArrayGapsRight = Grad.makeSingleCurve(listOfGapsRight,
-                                                ptsIntercon,
-                                                connectEndPts=False)[Grad.skipPtsGapStartRight::]
-    
-    SingleArrayGapsLeft = Grad.makeSingleCurve(listOfGapsLeft,
-                                               ptsIntercon,
-                                               connectEndPts=False,
-                                               startPts=True)[Grad.skipPtsGapEndLeft:-Grad.skipPtsGapEndLeft]
+    SingleArrayGapsRight = Grad.makeSingleCurve(
+            listOfGapsRight,
+            ptsIntercon,
+            connectEndPts=False)[Grad.skipPtsGapStartRight::]
+
+    SingleArrayGapsLeft = Grad.makeSingleCurve(
+            listOfGapsLeft,
+            ptsIntercon,
+            connectEndPts=False,
+            startPts=True)[Grad.skipPtsGapEndLeft:-Grad.skipPtsGapEndLeft]
 
     # add extra gaps for the left-right coil separation
     if "@extraGapCoilCoil" in GradCoil:
         extraGapMid = eval(GradCoil["@extraGapCoilCoil"])
-        Grad.TargetCell.shapes(Grad._ly.layer(Grad.LayerInfoGaps)).insert(pya.Path( arrayToPointList(extraGapMid), Grad.widthGaps))
+        Grad.TargetCell.shapes(Grad._ly.layer(Grad.LayerInfoGaps)).insert(
+            pya.Path(arrayToPointList(extraGapMid), Grad.widthGaps))
 
     # correct the first winding of the left coil
     Grad.skipLeftCorrect = -25
-    SingleArrayGapsLeft = np.append(SingleArrayGapsLeft[0:Grad.skipLeftCorrect],
-                                    np.array([SingleArrayGapsLeft[Grad.skipLeftCorrect]
-                                              - np.array([0.0, 1000e3])]), axis=0)
+    SingleArrayGapsLeft = np.append(
+            SingleArrayGapsLeft[0:Grad.skipLeftCorrect],
+            np.array([SingleArrayGapsLeft[Grad.skipLeftCorrect]
+                      - np.array([0.0, 1000e3])]), axis=0)
 
     Grad.SingleCoilArray = SingleCoilArrayRight[:-2]
-    Grad.SingleCoilArray = np.append(Grad.SingleCoilArray, SingleCoilArrayLeft, axis=0)
+    Grad.SingleCoilArray = np.append(
+            Grad.SingleCoilArray, SingleCoilArrayLeft, axis=0)
 
     # append the via positions
-    Grad.SingleCoilArray = np.append(np.array([eval(GradCoil["@posViaRight"])]) * 1e3,
-                                     Grad.SingleCoilArray, axis=0)
-    Grad.SingleCoilArray = np.append(Grad.SingleCoilArray,
-                                     np.array([eval(GradCoil["@posViaLeft"])]) * 1e3, axis=0)
+    Grad.SingleCoilArray = np.append(
+            np.array([eval(GradCoil["@posViaRight"])]) * 1e3,
+            Grad.SingleCoilArray, axis=0)
+    Grad.SingleCoilArray = np.append(
+            Grad.SingleCoilArray,
+            np.array([eval(GradCoil["@posViaLeft"])]) * 1e3, axis=0)
 
     Grad.makeCoilTrack(Grad.SingleCoilArray, width=Grad.widthInner)
 

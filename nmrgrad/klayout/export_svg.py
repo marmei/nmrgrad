@@ -82,9 +82,10 @@ def layout_cell_to_svg(cv, ly, lv, fname, scale_factor=1e3):
         iter_sc = cellTMP.begin_shapes_rec(idx)
 
         # create SVG layer for each internal layer
-        svg_layer = inkscape.layer(label=n_info.name.replace("*", " "),
-                                   locked=False)
-        dwg.add(svg_layer)
+        # svg_layer = inkscape.layer(label=n_info.name.replace("*", " "),
+        #                            locked=False)
+
+        # dwg.add(svg_layer)
 
         while not(iter_sc.at_end()):
             s = iter_sc.shape()
@@ -97,9 +98,8 @@ def layout_cell_to_svg(cv, ly, lv, fname, scale_factor=1e3):
                     tmp_coordinates.append([npp.x * dbu * 3.77952,  # px to mm
                                             npp.y * dbu * 3.77952])
 
-                svg_layer.add(dwg.polyline(points=tmp_coordinates,
-                                           fill="rgb{}".format(RGB),
-                                           opacity=0.5))
+                dwg.add(dwg.polyline(points=tmp_coordinates,
+                                     fill="rgb{}".format(RGB)))
             iter_sc.next()
     dwg.save()
 
